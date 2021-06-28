@@ -195,6 +195,44 @@ class ThreadWithReturnValue(Thread):
         return self._return
 
 
+class FlappyRocket:
+    def __init__(self):
+        self.start_img_path = "rc_items/flappyrocket_gameimg.png"
+        self.game = "flappyrocket"
+        self.game_status = "idle"
+
+    def can_start(self):
+        return check_image(self.start_img_path)
+
+    def play(self):
+        err = start_game(self, self.start_img_path)
+        if err:
+            return not err
+        start_game_msg(self.game)
+        self.run_game()
+        end_game(self)
+
+    def run_game(self):
+        self.game_status = "running"
+
+        try:
+            thread = ThreadWithReturnValue(target=check_image,
+                                           args=("rc_items/gain_power.png", True, self,))
+            thread.start()
+        except:
+            print("Unable to start thread for checking image")
+            end_game(self, fail=True)
+
+        initial = 0
+        while self.game_status == "running":
+            if initial == 0:
+                mouse_click(600, 400, wait=0.05)
+                initial = 1
+            mouse_click(600, 400, wait=0.05)
+            time.sleep(0.40)
+            keyboard.press_and_release("page up")  # to prevent errors for the thread with check image
+
+
 class Bot2048:
     def __init__(self):
         self.start_img_path = "rc_items/2048_gameimg.png"
@@ -425,9 +463,10 @@ class BotCoinClick:
 
 def main():
     Bots = [
-        Bot2048,
-        BotCoinFlip,
-        BotCoinClick
+        #Bot2048,
+        #BotCoinFlip,
+        #BotCoinClick,
+        FlappyRocket 
     ]
     global GAME_NUM
     while True:
