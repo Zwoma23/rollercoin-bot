@@ -463,9 +463,9 @@ class BotCoinClick:
 
 def main():
     Bots = [
-        #Bot2048,
-        #BotCoinFlip,
-        #BotCoinClick,
+        Bot2048,
+        BotCoinFlip,
+        BotCoinClick,
         FlappyRocket 
     ]
     global GAME_NUM
