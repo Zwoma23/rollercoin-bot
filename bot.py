@@ -65,16 +65,21 @@ def mouse_click(x, y, wait=0.2):
 
 
 def screen_grab():
-    im = ImageGrab.grab()
-    img_name = os.getcwd() + "\\imgs\\full_snap__" + str(int(time.time())) + ".png"
-    im.save(img_name, "PNG")
-    return img_name
+    return numpy.array(ImageGrab.grab().convert('RGB'))
+
+
+''' 
+This imread is required instead of directly calling cv2.imread so the array is transformed to RGB
+and can be compared again imageGrab images converted to numpy directly
+'''
+def imread(imgpath):
+    return cv2.cvtColor(cv2.imread(imgpath), cv2.COLOR_BGR2RGB)
 
 
 def find_image(image_path, root_image_path):
     matches = matchTemplates(
-        [("img", cv2.imread(image_path))],
-        cv2.imread(root_image_path),
+        [("img", imread(image_path))],
+        root_image_path,
         N_object=10,
         score_threshold=0.9,
         # maxOverlap=0.25,
@@ -103,16 +108,9 @@ def click_image(img):
     if x is None or y is None:
         return
 
-    im = cv2.imread(img)
+    im = imread(img)
     t_cols, t_rows, _ = im.shape
     mouse_click(x + t_rows * (3 / 5), y + t_cols * (2 / 3))
-
-
-def setup():
-    try:
-        os.mkdir('imgs')
-    except FileExistsError:
-        print("Program was not correctly closed last time. Make sure to exit the game with CTRL+C")
 
 
 def start_game(self, start_img_path):
@@ -195,7 +193,7 @@ class ThreadWithReturnValue(Thread):
         return self._return
 
 
-class FlappyRocket:
+class BotFlappyRocket:
     def __init__(self):
         self.start_img_path = "rc_items/flappyrocket_gameimg.png"
         self.game = "flappyrocket"
@@ -226,6 +224,7 @@ class FlappyRocket:
         initial = 0
         while self.game_status == "running":
             if initial == 0:
+                mouse_click(600, 400, wait=0.05)
                 mouse_click(600, 400, wait=0.05)
                 initial = 1
             mouse_click(600, 400, wait=0.05)
@@ -288,18 +287,18 @@ class BotCoinFlip:
             "tether": [],
         }
         self.coin_images = [
-            ("binance", cv2.imread("rc_items/coinflip_item_binance.png")),
-            ("btc", cv2.imread("rc_items/coinflip_item_btc.png")),
-            ("eth", cv2.imread("rc_items/coinflip_item_eth.png")),
-            ("litecoin", cv2.imread("rc_items/coinflip_item_litecoin.png")),
-            ("monero", cv2.imread("rc_items/coinflip_item_monero.png")),
-            ("eos", cv2.imread("rc_items/coinflip_item_eos.png")),
-            ("rlt", cv2.imread("rc_items/coinflip_item_rlt.png")),
-            ("xrp", cv2.imread("rc_items/coinflip_item_xrp.png")),
-            ("xml", cv2.imread("rc_items/coinflip_item_xml.png")),
-            ("tether", cv2.imread("rc_items/coinflip_item_tether.png")),
+            ("binance", imread("rc_items/coinflip_item_binance.png")),
+            ("btc", imread("rc_items/coinflip_item_btc.png")),
+            ("eth", imread("rc_items/coinflip_item_eth.png")),
+            ("litecoin", imread("rc_items/coinflip_item_litecoin.png")),
+            ("monero", imread("rc_items/coinflip_item_monero.png")),
+            ("eos", imread("rc_items/coinflip_item_eos.png")),
+            ("rlt", imread("rc_items/coinflip_item_rlt.png")),
+            ("xrp", imread("rc_items/coinflip_item_xrp.png")),
+            ("xml", imread("rc_items/coinflip_item_xml.png")),
+            ("tether", imread("rc_items/coinflip_item_tether.png")),
         ]
-        self.card_image = [("card", cv2.imread("rc_items/coinflip_back.png"))]
+        self.card_image = [("card", imread("rc_items/coinflip_back.png"))]
 
     def can_start(self):
         return check_image(self.start_img_path)
@@ -323,8 +322,8 @@ class BotCoinFlip:
     def get_coin_fields(self):
         self.game_status = "running"
 
-        screen = cv2.imread(screen_grab())
-        matches = cv2.matchTemplate(screen, cv2.imread("rc_items/coinflip_back.png"), cv2.TM_CCOEFF_NORMED)
+        screen = screen_grab()
+        matches = cv2.matchTemplate(screen, imread("rc_items/coinflip_back.png"), cv2.TM_CCOEFF_NORMED)
 
         locations = numpy.where(matches >= .7)
 
@@ -346,7 +345,7 @@ class BotCoinFlip:
             mouse_click(coin2_pos[0] + 10, coin2_pos[1] + 10, wait=0.5)
 
             # pyautogui.moveTo(100, 100)
-            screen = cv2.imread(screen_grab())
+            screen = screen_grab()
 
             matches = []
             threads = []
@@ -466,7 +465,7 @@ def main():
         Bot2048,
         BotCoinFlip,
         BotCoinClick,
-        FlappyRocket 
+        BotFlappyRocket 
     ]
     global GAME_NUM
     while True:
@@ -478,9 +477,6 @@ def main():
 if __name__ == "__main__":
     # pyautogui.displayMousePosition()
 
-    if os.path.exists("imgs"):
-        shutil.rmtree('imgs')
-    setup()
     try:
         main()
     except KeyboardInterrupt:
@@ -491,4 +487,3 @@ if __name__ == "__main__":
               "Time running: {!s}\n".format(datetime.datetime.now() - START_TIME),
               "Played Games:  {!s}\n".format(GAME_NUM)
               )
-        shutil.rmtree('imgs')
