@@ -64,8 +64,8 @@ def mouse_click(x, y, wait=0.2):
     time.sleep(wait)
 
 
-def screen_grab():
-    return numpy.array(ImageGrab.grab().convert('RGB'))
+def screen_grab(bbox=None):
+    return numpy.array(ImageGrab.grab(bbox).convert('RGB'))
 
 
 ''' 
@@ -428,35 +428,32 @@ class BotCoinClick:
             end_game(self, fail=True)
 
         while self.game_status == "running":
-            pic = pyautogui.screenshot(region=(530, 430, 828, 417,))
+            xOffset = 530
+            yOffset = 430
+            pic = ImageGrab.grab(bbox=(xOffset, yOffset, xOffset + 828, yOffset + 417)).convert('RGB')
             width, height = pic.size
             for x in range(0, width, 5):
+                match = False
                 for y in range(0, height, 5):
                     r, g, b = pic.getpixel((x, y))
 
                     # blue coin
-                    if b == 183 and r == 0:
-                        mouse_click(x + 530, y + 440, wait=0)
-                        break
-
                     # yellow coin
-                    if b == 64 and r == 200:
-                        mouse_click(x + 530, y + 440, wait=0)
-                        break
-
                     # orange coin
-                    if b == 33 and r == 231:
-                        mouse_click(x + 530, y + 440, wait=0)
-                        break
-
                     # grey coin
-                    if b == 230 and r == 230:
-                        mouse_click(x + 535, y + 440, wait=0)
+                    if (b == 183 and r == 0) or \
+                       (b == 64 and r == 200) or \
+                       (b == 33 and r == 231) or \
+                       (b == 230 and r == 230):
+                        mouse_click(x + xOffset, y + yOffset, wait=0)
+                        match=True
                         break
 
                     if self.game_status == "ended":
                         break
                 if self.game_status == "ended":
+                    break
+                if match:
                     break
 
 
