@@ -121,7 +121,10 @@ def start_game(self, start_img_path):
     retries = 0
     while not check_image("rc_items/start_game.png"):
         retries += 1
-        if check_image("rc_items/captcha_error.png") or retries >= 50:
+        if check_image("rc_items/captcha_button.png"):
+            time.sleep(1)
+            click_image("rc_items/captcha_button.png")
+        elif check_image("rc_items/captcha_error.png") or retries >= 50:
             print('captcha_error')
             keyboard.press_and_release('F5')
             break
