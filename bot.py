@@ -232,7 +232,7 @@ class BotFlappyRocket:
                 mouse_click(600, 400, wait=0.05)
                 initial = 1
             mouse_click(600, 400, wait=0.05)
-            time.sleep(0.40)
+            time.sleep(0.47)
             keyboard.press_and_release("page up")  # to prevent errors for the thread with check image
 
 
@@ -449,7 +449,7 @@ class BotCoinClick:
                        (b == 64 and r == 200) or \
                        (b == 33 and r == 231) or \
                        (b == 230 and r == 230):
-                        mouse_click(x + xOffset, y + yOffset, wait=0)
+                        mouse_click(x + xOffset + 20, y + yOffset + 20, wait=0)
                         match=True
                         break
 
