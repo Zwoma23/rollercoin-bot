@@ -9,7 +9,6 @@ import numpy
 import cv2
 import keyboard
 import pyautogui
-import shutil
 from PIL import ImageGrab
 from MTM import matchTemplates
 from threading import Thread
@@ -76,11 +75,11 @@ def imread(imgpath):
     return cv2.cvtColor(cv2.imread(imgpath), cv2.COLOR_BGR2RGB)
 
 
-def find_image(image_path, root_image_path):
+def find_image(image_path, root_image_path, n_object=10):
     matches = matchTemplates(
         [("img", imread(image_path))],
         root_image_path,
-        N_object=10,
+        N_object=n_object,
         score_threshold=0.9,
         # maxOverlap=0.25,
         searchBox=None)
@@ -403,6 +402,47 @@ class BotCoinFlip:
         keyboard.press_and_release("esc")
 
 
+class BotCryptonoid:
+    def __init__(self):
+        self.start_img_path = "rc_items/cryptonoid_gameimg.png"
+        self.game = "CryptoNoid"
+        self.game_status = "idle"  
+
+    def can_start(self):
+        return check_image(self.start_img_path)
+
+    def play(self):
+        err = start_game(self, self.start_img_path)
+        if err:
+            return not err
+        start_game_msg(self.game)
+        self.run_game()
+        end_game(self)
+
+    def run_game(self):
+        self.game_status = "running"
+
+        try:
+            thread = ThreadWithReturnValue(target=check_image,
+                                           args=("rc_items/gain_power.png", True, self,))
+            thread.start()
+        except:
+            print("Unable to start thread for checking image")
+            end_game(self, fail=True)
+
+        time.sleep(4) # So the game loads and we identify the elements
+        initialScreen = screen_grab()
+        heartX, _ = find_image("rc_items/lifes_indicator.png", initialScreen, 1)
+        _, barY = find_image("rc_items/cryptonoid_bar.png", initialScreen, 1)
+        startX = heartX - 12
+        startY = barY - 100
+        
+        while self.game_status == "running":
+            x, y = find_image("rc_items/cryptonoid_ball.png", screen_grab(bbox=(startX, startY, startX + 812, barY)), 1)
+            if not (x is None or y is None):
+                mouse_click(x + startX, y + startY, wait=0)
+
+
 class BotCoinClick:
     def __init__(self):
         self.start_img_path = "rc_items/coinclick_gameimg.png"
@@ -439,7 +479,7 @@ class BotCoinClick:
             for x in range(0, width, 5):
                 match = False
                 for y in range(0, height, 5):
-                    r, g, b = pic.getpixel((x, y))
+                    r, _, b = pic.getpixel((x, y))
 
                     # blue coin
                     # yellow coin
@@ -466,7 +506,8 @@ def main():
         Bot2048,
         BotCoinFlip,
         BotCoinClick,
-        BotFlappyRocket 
+        BotFlappyRocket,
+        BotCryptonoid 
     ]
     global GAME_NUM
     while True:
