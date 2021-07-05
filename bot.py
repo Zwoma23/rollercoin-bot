@@ -196,10 +196,10 @@ class ThreadWithReturnValue(Thread):
         return self._return
 
 
-class BotFlappyRocket:
-    def __init__(self):
-        self.start_img_path = "rc_items/flappyrocket_gameimg.png"
-        self.game = "flappyrocket"
+class BaseBot:
+    def __init__(self, game_name):
+        self.start_img_path = "rc_items/" + game_name + "_gameimg.png"
+        self.game = game_name
         self.game_status = "idle"
 
     def can_start(self):
@@ -215,7 +215,6 @@ class BotFlappyRocket:
 
     def run_game(self):
         self.game_status = "running"
-
         try:
             thread = ThreadWithReturnValue(target=check_image,
                                            args=("rc_items/gain_power.png", True, self,))
@@ -223,6 +222,14 @@ class BotFlappyRocket:
         except:
             print("Unable to start thread for checking image")
             end_game(self, fail=True)
+
+
+class BotFlappyRocket(BaseBot):
+    def __init__(self):
+        super().__init__("flappyrocket")
+
+    def run_game(self):
+        super().run_game()
 
         initial = 0
         while self.game_status == "running":
@@ -235,34 +242,13 @@ class BotFlappyRocket:
             keyboard.press_and_release("page up")  # to prevent errors for the thread with check image
 
 
-class Bot2048:
+class Bot2048(BaseBot):
     def __init__(self):
-        self.start_img_path = "rc_items/2048_gameimg.png"
+        super().__init__("2048")
         self.available_moves = ["right", "left", "up", "down"]
-        self.game = "2048"
-        self.game_status = "idle"
-
-    def can_start(self):
-        return check_image(self.start_img_path)
-
-    def play(self):
-        err = start_game(self, self.start_img_path)
-        if err:
-            return not err
-        start_game_msg(self.game)
-        self.run_game()
-        end_game(self)
 
     def run_game(self):
-        self.game_status = "running"
-
-        try:
-            thread = ThreadWithReturnValue(target=check_image,
-                                           args=("rc_items/gain_power.png", True, self,))
-            thread.start()
-        except:
-            print("Unable to start thread for checking image")
-            end_game(self, fail=True)
+        super().run_game()
 
         while self.game_status == "running":
             for i in range(8):
@@ -402,33 +388,12 @@ class BotCoinFlip:
         keyboard.press_and_release("esc")
 
 
-class BotCryptonoid:
+class BotCryptonoid(BaseBot):
     def __init__(self):
-        self.start_img_path = "rc_items/cryptonoid_gameimg.png"
-        self.game = "CryptoNoid"
-        self.game_status = "idle"  
-
-    def can_start(self):
-        return check_image(self.start_img_path)
-
-    def play(self):
-        err = start_game(self, self.start_img_path)
-        if err:
-            return not err
-        start_game_msg(self.game)
-        self.run_game()
-        end_game(self)
+        super().__init__("cryptonoid")
 
     def run_game(self):
-        self.game_status = "running"
-
-        try:
-            thread = ThreadWithReturnValue(target=check_image,
-                                           args=("rc_items/gain_power.png", True, self,))
-            thread.start()
-        except:
-            print("Unable to start thread for checking image")
-            end_game(self, fail=True)
+        super().run_game()
 
         time.sleep(4) # So the game loads and we identify the elements
         initialScreen = screen_grab()
@@ -443,33 +408,12 @@ class BotCryptonoid:
                 mouse_click(x + startX, y + startY, wait=0)
 
 
-class BotCoinClick:
+class BotCoinClick(BaseBot):
     def __init__(self):
-        self.start_img_path = "rc_items/coinclick_gameimg.png"
-        self.game = "CoinClick"
-        self.game_status = "idle"
-
-    def can_start(self):
-        return check_image(self.start_img_path)
-
-    def play(self):
-        err = start_game(self, self.start_img_path)
-        if err:
-            return not err
-        start_game_msg(self.game)
-        self.run_game()
-        end_game(self)
+        super().__init__("coinclick")
 
     def run_game(self):
-        self.game_status = "running"
-
-        try:
-            thread = ThreadWithReturnValue(target=check_image,
-                                           args=("rc_items/gain_power.png", True, self,))
-            thread.start()
-        except:
-            print("Unable to start thread for checking image")
-            end_game(self, fail=True)
+        super().run_game()
 
         while self.game_status == "running":
             xOffset = 530
@@ -503,11 +447,11 @@ class BotCoinClick:
 
 def main():
     Bots = [
-        Bot2048,
         BotCoinFlip,
         BotCoinClick,
-        BotFlappyRocket,
-        BotCryptonoid 
+        BotCryptonoid,
+        Bot2048,
+        BotFlappyRocket 
     ]
     global GAME_NUM
     while True:
